@@ -3,7 +3,7 @@ from distutils.util import strtobool
 import numpy as np
 import pandas as pd
 import plac
-import pytorch_lightning as pl
+# import pytorch_lightning as pl
 import torch
 from pytorch_tabular import TabularModel
 from pytorch_tabular.config import (
@@ -17,9 +17,6 @@ from sklearn.metrics import accuracy_score, f1_score
 from gate.config import GatedAdditiveTreeEnsembleConfig
 from gate.attention_forest import GatedAdditiveTreeEnsembleModel
 from static_config import DATASET_MAP, LEARNING_RATE_SCHEDULER_MAP, OPTIMIZER_MAP
-
-# TODO Find how to set seed config
-pl.seed_everything(42)
 
 
 def load_data(data):
@@ -252,6 +249,12 @@ def get_configs(
     "tree_wise_attention", help="Tree wise attention", type=strtobool, abbrev="twa"
 )
 @plac.opt(
+    "tree_wise_attention_dropout",
+    help="Dropout for Tree wise attention",
+    type=float,
+    abbrev="twd",
+)
+@plac.opt(
     "feature_mask_function",
     type=str,
     help="Feature mask function",
@@ -276,6 +279,7 @@ def get_configs(
 )
 @plac.opt("dropout", type=float, help="Dropout", abbrev="drop")
 @plac.opt("track_experiment", help="Track experiment", type=strtobool, abbrev="te")
+@plac.opt("seed", help="Random Seed", type=int, abbrev="seed")
 def main(
     dataset="FOREST",
     continuous_feature_transform="none",
@@ -357,9 +361,8 @@ def main(
         optimizer_config=optimizer_config,
         trainer_config=trainer_config,
         experiment_config=experiment_config if track_experiment else None,
-        model_callable=GatedAdditiveTreeEnsembleModel
+        model_callable=GatedAdditiveTreeEnsembleModel,
     )
-
     # if auto_lr_find:
     #     results = tabular_model.find_learning_rate(train=train_df,
     #                                                validation=valid_df,
