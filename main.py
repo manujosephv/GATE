@@ -109,7 +109,8 @@ def get_configs(
     load_best=True,
     log_target="wandb",
     experiment_name=None,
-    fast_dev_run=False
+    fast_dev_run=False,
+    track_experiment=False
 ):
     data_config = DataConfig(
         target=["target"],
@@ -183,13 +184,16 @@ def get_configs(
 
     model_config = _model_config(**model_params)
     run_name = f"GATE_{dataset}_ntrees_{num_trees}_depth_{tree_depth}_ft_{gflu_stages}"
-    experiment_config = ExperimentConfig(
-        project_name=f"GATE_experiments_{dataset}",
-        run_name=run_name if experiment_name is None else experiment_name,
-        # exp_watch="gradients" if log_target == "wandb" else None,
-        log_target=log_target,
-        log_logits=False,
-    )
+    if track_experiment:
+        experiment_config = ExperimentConfig(
+            project_name=f"GATE_experiments_{dataset}",
+            run_name=run_name if experiment_name is None else experiment_name,
+            # exp_watch="gradients" if log_target == "wandb" else None,
+            log_target=log_target,
+            log_logits=False,
+        )
+    else:
+        experiment_config = None
     return (
         data_config,
         trainer_config,
@@ -353,7 +357,8 @@ def run(
         dataset,
         checkpoints_path,
         experiment_name=experiment_name,
-        fast_dev_run=fast_dev_run
+        fast_dev_run=fast_dev_run,
+        track_experiment=track_experiment
     )
 
     tabular_model = TabularModel(
@@ -372,9 +377,12 @@ def run(
         optimizer_params=opt_params if custom_opt is not None else {},
         # callbacks=[RichProgressBar()],
     )
-    result = tabular_model.evaluate(test_df)
-    print(result)
-    return " | ".join([f"{k}:{v:.4f}" for k, v in result[0].items()])
+    if fast_dev_run:
+        return "Model Fit Sucessfully"
+    else:
+        result = tabular_model.evaluate(test_df)
+        print(result)
+        return " | ".join([f"{k}:{v:.4f}" for k, v in result[0].items()])
 
 
 if __name__ == "__main__":

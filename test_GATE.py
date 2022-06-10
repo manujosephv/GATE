@@ -40,6 +40,6 @@ def test_GATE(
         track_experiment=False,
         checkpoints_path="saved_checkpoints/",
         experiment_name=None,
-        fast_dev_run=False,
+        fast_dev_run=True,
     )
     assert results is not None
