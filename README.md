@@ -6,7 +6,7 @@ We propose a novel high-performance, parameter and computationally efficient dee
 
 Although the PyTorch Tabular (which is a dependency) installation includes PyTorch, the best and recommended way is to first install PyTorch from [here](https://pytorch.org/get-started/locally/), picking up the right CUDA version for your machine.
 
-Once, you have got Pytorch installed, just use:
+Once, you have got Pytorch installed, clone the repository and run the following command:
 ```
  pip install -r requirements.txt
 ```
@@ -84,4 +84,15 @@ options:
                         Dropout
   -te False, --track-experiment False
                         Track experiment
+```
+
+## Files
+
+The code for the GATE model is inside `gate` folder. GATE uses PyTorch Tabular to load the data and train the model.
+
+```
+-gate
+  -  attention_forest.py - Has all the core code for the GATE model.
+  -  config.py - Has all the configurations for the GATE model.
+  -  utils.py - Has all the utility functions for the GATE model.
 ```
