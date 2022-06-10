@@ -1,20 +1,10 @@
 # Gated Additive Tree Ensemble(GATE)
 
-We propose a novel high-performance, parameter and computationally efficient deep learning architecture for tabular data, Gated Additive Tree Ensemble(GATE). GATE uses a gating mechanism, inspired from GRU, as a feature representation learning unit with an in-built feature selection mechanism. We combine it with an ensemble of differentiable, non-linear decision trees, re-weighted with simple self-attention to predict our desired output. We demonstrate that GATE is a competitive alternative to SOTA approaches like GBDTs, NODE, FT Transformers, etc. by experiments on several public datasets (both classification and regression). We have released the code under the MIT license.
-
-## Table of Contents
-
-- [Installation](#installation)
-- [Documentation](#documentation)
-- [Available Models](#available-models)
-- [Usage](#usage)
-- [Blogs](#blogs)
-- [Citation](#citation)
-
+We propose a novel high-performance, parameter and computationally efficient deep learning architecture for tabular data, Gated Additive Tree Ensemble(GATE). GATE uses a gating mechanism, inspired from GRU, as a feature representation learning unit with an in-built feature selection mechanism. We combine it with an ensemble of differentiable, non-linear decision trees, re-weighted with simple self-attention to predict our desired output. We demonstrate that GATE is a competitive alternative to SOTA approaches like GBDTs, NODE, FT Transformers, etc. by experiments on several public datasets (both classification and regression). We have released the code under the MIT license. [arxiv Paper]()
 
 ## Installation
 
-Although the PyTorch Tabular installation includes PyTorch, the best and recommended way is to first install PyTorch from [here](https://pytorch.org/get-started/locally/), picking up the right CUDA version for your machine.
+Although the PyTorch Tabular (which is a dependency) installation includes PyTorch, the best and recommended way is to first install PyTorch from [here](https://pytorch.org/get-started/locally/), picking up the right CUDA version for your machine.
 
 Once, you have got Pytorch installed, just use:
 ```
@@ -29,7 +19,7 @@ to install the all the dependencies.
 `main.py` is the main file of the GATE package. It is a python script that can be used to train GATE models and replicate the r=experiments.
 
 The file can be used as a command line tool as well as programatically to train GATE models. 
-`main` function inside `main.py` takes the following arguments:
+`run` function inside `main.py` takes the following arguments:
 
 ```
 usage: main.py [-h] [-cft none] [-ncf True] [-lr 0.001] [-alr False] [-bs 1024] [-e 100] [-es True] [-gpu True] [-o adam] [-wd 1e-05] [-lrs cosine] [-fau 6] [-fadp 0.0] [-nt 20] [-td 6] [-twa True] [-twd 0.0] [-fmf entmax] [-ba entmoid] [-tdr 0.0] [-shw False]
@@ -56,8 +46,8 @@ options:
                         Batch size
   -e 100, --max-epochs 100
                         Max epochs
-  -es True, --early-stopping True
-                        Early stopping
+  -es valid_loss, --early-stopping valid_loss
+                        Early stopping. The metric to monitor for early stopping
   -gpu True, --use-gpu True
                         Use GPU
   -o adam, --optimizer adam
@@ -95,6 +85,3 @@ options:
   -te False, --track-experiment False
                         Track experiment
 ```
-
-## Citation
-* [arxiv Paper](https://arxiv.org/abs/2104.13638)
