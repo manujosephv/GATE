@@ -16,7 +16,7 @@ from sklearn.metrics import accuracy_score, f1_score
 
 from gate.config import GatedAdditiveTreeEnsembleConfig
 from gate.attention_forest import GatedAdditiveTreeEnsembleModel
-from static_config import DATASET_MAP, LEARNING_RATE_SCHEDULER_MAP, OPTIMIZER_MAP
+from config.static_config import DATASET_MAP, LEARNING_RATE_SCHEDULER_MAP, OPTIMIZER_MAP
 
 
 def load_data(data):
@@ -109,6 +109,7 @@ def get_configs(
     load_best=True,
     log_target="wandb",
     experiment_name=None,
+    fast_dev_run=False
 ):
     data_config = DataConfig(
         target=["target"],
@@ -137,7 +138,7 @@ def get_configs(
         # best_model_path=best_model_path,
         load_best=load_best,
         # profiler="pytorch",
-        # fast_dev_run=True
+        fast_dev_run=fast_dev_run
     )
     opt = OPTIMIZER_MAP[optimizer]
     wd = weight_decay if weight_decay is not None else 0.0
@@ -183,9 +184,7 @@ def get_configs(
     model_config = _model_config(**model_params)
     run_name = f"GATE_{dataset}_ntrees_{num_trees}_depth_{tree_depth}_ft_{gflu_stages}"
     experiment_config = ExperimentConfig(
-        # project_name=f"NeuralBoostedDecisionTrees_{dataset}_v2",
         project_name=f"GATE_experiments_{dataset}",
-        # project_name=f"DTree Research",
         run_name=run_name if experiment_name is None else experiment_name,
         # exp_watch="gradients" if log_target == "wandb" else None,
         log_target=log_target,
@@ -221,7 +220,7 @@ def get_configs(
 @plac.opt("batch_size", type=int, help="Batch size", abbrev="bs")
 @plac.opt("auto_lr_find", help="Auto lr find", type=strtobool, abbrev="alr")
 @plac.opt("max_epochs", type=int, help="Max epochs", abbrev="e")
-@plac.opt("early_stopping", help="Early stopping", type=strtobool, abbrev="es")
+@plac.opt("early_stopping", help="Early stopping. The metric to monitor for early stopping", type=str, abbrev="es")
 @plac.opt("optimizer", type=str, help="Optimizer", choices=OPTIMIZER_MAP.keys())
 @plac.opt("weight_decay", type=float, help="Weight decay", abbrev="wd")
 @plac.opt(
@@ -280,7 +279,7 @@ def get_configs(
 @plac.opt("dropout", type=float, help="Dropout", abbrev="drop")
 @plac.opt("track_experiment", help="Track experiment", type=strtobool, abbrev="te")
 @plac.opt("seed", help="Random Seed", type=int, abbrev="seed")
-def main(
+def run(
     dataset="FOREST",
     continuous_feature_transform="none",
     normalize_continuous_features=True,
@@ -288,7 +287,7 @@ def main(
     auto_lr_find=False,
     batch_size=1024,
     max_epochs=100,
-    early_stopping: bool = True,
+    early_stopping: str = "valid_loss",
     use_gpu: bool = True,
     optimizer: str = "adam",
     weight_decay: float = 1e-5,
@@ -309,6 +308,7 @@ def main(
     track_experiment: bool = False,
     checkpoints_path="saved_checkpoints/",
     experiment_name: str = None,
+    fast_dev_run=False
 ):
     torch.cuda.empty_cache()
     data_dict, train_df, valid_df, test_df, feature_names, num_classes = get_data(
@@ -353,6 +353,7 @@ def main(
         dataset,
         checkpoints_path,
         experiment_name=experiment_name,
+        fast_dev_run=fast_dev_run
     )
 
     tabular_model = TabularModel(
@@ -363,16 +364,6 @@ def main(
         experiment_config=experiment_config if track_experiment else None,
         model_callable=GatedAdditiveTreeEnsembleModel,
     )
-    # if auto_lr_find:
-    #     results = tabular_model.find_learning_rate(train=train_df,
-    #                                                validation=valid_df,
-    #                                                loss=None,
-    #                                                optimizer=custom_opt,
-    #                                                optimizer_params=opt_params if custom_opt is not None else {},
-    #                                                # callbacks=[RichProgressBar()],
-    #                                                )
-    #     print(f"Suggested LR = {results[0]}")
-    #     return results
 
     tabular_model.fit(
         train=train_df,
@@ -386,16 +377,5 @@ def main(
     return " | ".join([f"{k}:{v:.4f}" for k, v in result[0].items()])
 
 
-#     pred_df = tabular_model.predict(test_df)
-#     val_acc, val_f1 = calculate_metrics(
-#         test_df["target"],
-#         pred_df["prediction"]
-#         if data_dict["task"] == "classification"
-#         else pred_df["target_prediction"],
-#         tag="Test",
-#         task=data_dict["task"],
-#     )
-
-
 if __name__ == "__main__":
-    plac.call(main)
+    plac.call(run)
